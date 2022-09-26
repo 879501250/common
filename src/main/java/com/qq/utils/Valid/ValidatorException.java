@@ -1,5 +1,6 @@
-package com.qq.utils.Exception;
+package com.qq.utils.Valid;
 
+import com.qq.utils.Exception.ExceptionCodeEnum;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
