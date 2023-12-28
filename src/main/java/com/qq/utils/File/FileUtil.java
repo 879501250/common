@@ -6,7 +6,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -109,20 +112,20 @@ public class FileUtil {
         return System.getProperty("user.home");
     }
 
-    //删除文件夹
+    // 删除文件夹
     public static void delFolder(String folderPath) {
         try {
-            delAllFile(folderPath); //删除完里面所有内容
+            delAllFile(folderPath); // 删除完里面所有内容
             String filePath = folderPath;
             filePath = filePath.toString();
             File myFilePath = new File(filePath);
-            myFilePath.delete(); //删除空文件夹
+            myFilePath.delete(); // 删除空文件夹
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    //删除指定文件夹下的所有文件
+    // 删除指定文件夹下的所有文件
     public static boolean delAllFile(String path) throws InterruptedException {
         boolean flag = false;
         File file = new File(path);
@@ -141,14 +144,14 @@ public class FileUtil {
                 temp = new File(path + File.separator + tempList[i]);
             }
             if (temp.isFile()) {
-                //由于关闭io流后文件仍然被占用,因此直接采用gc垃圾回收等待两秒删除
+                // 由于关闭io流后文件仍然被占用,因此直接采用gc垃圾回收等待两秒删除
                 System.gc();
                 Thread.sleep(2000);
                 temp.delete();
             }
             if (temp.isDirectory()) {
-                delAllFile(path + "/" + tempList[i]);//先删除文件夹里面的文件
-                delFolder(path + "/" + tempList[i]);//再删除空文件夹
+                delAllFile(path + "/" + tempList[i]);// 先删除文件夹里面的文件
+                delFolder(path + "/" + tempList[i]);// 再删除空文件夹
                 flag = true;
             }
         }
@@ -175,7 +178,7 @@ public class FileUtil {
         try {
             response.reset();
 
-            //添加响应头的跨域信息--开始
+            // 添加响应头的跨域信息--开始
             response.addHeader("Access-Control-Allow-Origin", "*");
             response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
             response.addHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -203,5 +206,76 @@ public class FileUtil {
             if (in != null) in.close();
             if (out != null) out.close();
         }
+    }
+
+    private static List<String> list;
+
+    /**
+     * 获取指定路径下所有以指定文件名为前缀的路径
+     *
+     * @param fileName 待查找的文件名
+     * @param dest     需要查找的目录
+     * @return 知道的路径集合
+     */
+    public static List<String> searchFile(String fileName, String dest) {
+        File file = new File(dest);
+        // 路径不存在直接返回
+        if (!file.exists()) {
+            return Collections.emptyList();
+        }
+        list = new ArrayList<>();
+        searchFile(fileName, file);
+        return list;
+    }
+
+    /**
+     * 获取指定文件下所有以指定文件名为前缀的路径
+     *
+     * @param fileName 待查找的文件名
+     * @param file     需要遍历的文件
+     */
+    private static void searchFile(String fileName, File file) {
+        // 文件是目录，遍历所有子文件
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                searchFile(fileName, files[i]);
+            }
+        } else {
+            String name = file.getName();
+            if (name.endsWith(".jar")) { // jar 文件
+                try {
+                    searchJar(fileName, new JarFile(file));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else { // 普通文件
+                if (name.startsWith(fileName)) {
+                    String absolutePath = file.getAbsolutePath();
+                    System.out.println(absolutePath);
+                    list.add(absolutePath);
+                }
+            }
+        }
+    }
+
+    /**
+     * 搜索 jar 下以指定文件名开头的文件
+     *
+     * @param fileName 指定文件名
+     * @param jarFile  jar 文件
+     */
+    private static void searchJar(String fileName, JarFile jarFile) {
+        jarFile.stream().forEach(jarEntry -> {
+            String name = jarEntry.getName();
+            int lastIndexOf = name.lastIndexOf("/");
+            if (lastIndexOf != -1) {
+                name = name.substring(lastIndexOf + 1);
+            }
+            if (name.startsWith(fileName)) {
+                System.out.println(jarFile.getName());
+                list.add(jarFile.getName());
+            }
+        });
     }
 }
