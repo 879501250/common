@@ -26,7 +26,7 @@ public final class ValidationUtils {
             return errorProcess("校验对象不能为空", throwException);
         } else {
             Set<ConstraintViolation<T>> constraintViolations = DEFAULT_VALIDATOR.validate(target);
-            ConstraintViolation<T> constraintViolation = Iterables.getFirst(constraintViolations, null);
+            ConstraintViolation<T> constraintViolation = constraintViolations.stream().findFirst().get();
             if (constraintViolation != null) {
                 // 用户可以指定抛异常还是返回错误信息
                 return errorProcess(constraintViolation.getPropertyPath() + ":" + constraintViolation.getMessage(),

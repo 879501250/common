@@ -26,9 +26,10 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(BizException.class)
-    public Result<ExceptionCodeEnum> handleBizException(BizException bizException) {
+    public Result handleBizException(BizException bizException) {
         log.warn("业务异常:{}", bizException.getMessage(), bizException);
-        return Result.error(bizException.getError());
+        ExceptionCodeEnum error = bizException.getError();
+        return Result.error().code(error.getCode()).message(error.getDesc());
     }
 
     /**
@@ -38,9 +39,9 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(RuntimeException.class)
-    public Result<ExceptionCodeEnum> handleRunTimeException(RuntimeException e) {
+    public Result handleRunTimeException(RuntimeException e) {
         log.warn("运行时异常: {}", e.getMessage(), e);
-        return Result.error(ExceptionCodeEnum.ERROR);
+        return Result.error().code(ExceptionCodeEnum.ERROR.getCode()).message(ExceptionCodeEnum.ERROR.getDesc());
     }
 
     /**
@@ -51,11 +52,11 @@ public class GlobalExceptionHandler {
      * @see ValidatorUtils
      */
     @ExceptionHandler(ValidatorException.class)
-    public Result<ExceptionCodeEnum> handleValidatorException(ValidatorException e) {
+    public Result handleValidatorException(ValidatorException e) {
         // 打印精确的参数错误日志，方便后端排查
         log.warn("参数校验异常: {}", e.getMessage(), e);
         // 一般来说，给客户端展示泛化的错误信息即可，联调时可以返回精确的信息
-        return Result.error(e.getMessage());
+        return Result.error().message(e.getMessage());
     }
 
     /**
@@ -66,9 +67,9 @@ public class GlobalExceptionHandler {
      * @see ValidatorUtils
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    public Result<ExceptionCodeEnum> handleConstraintViolationException(ConstraintViolationException e) {
+    public Result handleConstraintViolationException(ConstraintViolationException e) {
         log.warn("参数错误: {}", e.getMessage(), e);
-        return Result.error(ExceptionCodeEnum.ERROR_PARAM, e.getMessage());
+        return Result.error().code(ExceptionCodeEnum.ERROR_PARAM.getCode()).message(ExceptionCodeEnum.ERROR_PARAM.getDesc());
     }
 
     /**
@@ -78,13 +79,13 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(BindException.class)
-    public Result<Map<String, String>> validationBindException(BindException e) {
+    public Result validationBindException(BindException e) {
         List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
         String message = fieldErrors.stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(" && "));
         log.error("参数错误: {}", message, e);
-        return Result.error(ExceptionCodeEnum.ERROR_PARAM, message);
+        return Result.error().code(ExceptionCodeEnum.ERROR_PARAM.getCode()).message(ExceptionCodeEnum.ERROR_PARAM.getDesc());
     }
 
     /**
@@ -94,13 +95,13 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Result<Map<String, String>> validationMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public Result validationMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
         String message = fieldErrors.stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(" && "));
         log.error("参数错误: {}", message, e);
-        return Result.error(ExceptionCodeEnum.ERROR_PARAM, message);
+        return Result.error().code(ExceptionCodeEnum.ERROR_PARAM.getCode()).message(ExceptionCodeEnum.ERROR_PARAM.getDesc());
     }
 
 }

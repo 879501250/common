@@ -3,8 +3,8 @@ package com.qq.utils.Ssh;
 import com.jcraft.jsch.JSchException;
 import com.qq.utils.Ssh.Impl.JschSshClient;
 import com.qq.utils.String.StrUtil;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SshClientFactory {
 

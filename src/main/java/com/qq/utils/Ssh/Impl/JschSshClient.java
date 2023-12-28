@@ -5,18 +5,14 @@ import com.qq.utils.File.FileUtil;
 import com.qq.utils.Ssh.ExecCallback;
 import com.qq.utils.Ssh.SshClient;
 import com.qq.utils.String.StrUtil;
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
 import io.jsonwebtoken.lang.Assert;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class JschSshClient implements SshClient {
 
@@ -93,11 +89,11 @@ public class JschSshClient implements SshClient {
             Assert.state(FileUtil.isFile(rsaFile), "私钥文件不存在：" + FileUtil.getAbsolutePath(rsaFile));
             jsch.addIdentity(FileUtil.getAbsolutePath(rsaFile), passphrase);
         }
-        //第一次登陆时候，是否需要提示信息
+        // 第一次登陆时候，是否需要提示信息
         session.setConfig("StrictHostKeyChecking", "no");
-        //设置ssh的DH秘钥交换
+        // 设置ssh的DH秘钥交换
         // session.setConfig("kex", "diffie-hellman-group1-sha1");
-        //跳过Kerberos username 身份验证提示
+        // 跳过Kerberos username 身份验证提示
         session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
         session.connect();
     }
